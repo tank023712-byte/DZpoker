@@ -1,6 +1,6 @@
 /**
- * 德州扑克内容消费 App MVP 首屏骨架
- * 修改重点：实现底部 4 个一级 Tab，以及首页内 6 个内容频道的可切换导航。
+ * 德州扑克教学 App 新视觉首屏实现
+ * 修改重点：按 Figma 设计稿重构首页、工具、课程、我的四个核心移动端页面。
  */
 import { StatusBar } from 'expo-status-bar';
 import { useMemo, useState } from 'react';
@@ -22,12 +22,29 @@ type HomeChannelKey =
   | 'video'
   | 'live';
 
-type ContentCard = {
+type FeedCard = {
   id: string;
-  title: string;
-  summary: string;
-  typeLabel: string;
+  accent: string;
+  badge: string;
+  cta?: string;
   meta: string;
+  title: string;
+};
+
+const colors = {
+  panel: '#F6F2E6',
+  card: '#FFFCF2',
+  ink: '#090E10',
+  table: '#09201D',
+  tableLift: '#0F312B',
+  mint: '#20E0AF',
+  mintSoft: '#D5F9EB',
+  coral: '#FF5241',
+  gold: '#F0B948',
+  blue: '#4389F4',
+  muted: '#7D837C',
+  line: '#DCD2B5',
+  white: '#FFFFFF',
 };
 
 const rootTabs: Array<{ key: RootTabKey; label: string }> = [
@@ -46,181 +63,174 @@ const homeChannels: Array<{ key: HomeChannelKey; label: string }> = [
   { key: 'live', label: '直播' },
 ];
 
-// 首屏先使用本地 mock 数据，后续替换为 /api/v1/feed?channel=xxx 聚合流接口。
-const channelCards: Record<HomeChannelKey, ContentCard[]> = {
+// 首版仍使用本地 mock 数据，后续接入 /api/v1/feed?channel=xxx。
+const channelCards: Record<HomeChannelKey, FeedCard[]> = {
   following: [
     {
       id: 'following-1',
+      accent: colors.mint,
+      badge: '关注',
       title: '你关注的教练更新了 3bet 底池复盘',
-      summary: '从按钮位开局范围到转牌持续下注，拆解一手常见但容易过度防守的牌局。',
-      typeLabel: '关注动态',
       meta: '12 分钟前 · 3 条评论',
+      cta: '查看',
     },
     {
       id: 'following-2',
-      title: '关注作者发布直播预告',
-      summary: '今晚复盘线上 MTT 中后期短码决策，支持预约提醒。',
-      typeLabel: '直播预告',
+      accent: colors.coral,
+      badge: '直播预告',
+      title: '今晚复盘线上 MTT 中后期短码决策',
       meta: '20:30 开始 · 128 人预约',
+      cta: '预约',
     },
   ],
   recommend: [
     {
       id: 'recommend-1',
-      title: '翻牌圈顶对弱踢脚，应该控池还是下注？',
-      summary: '推荐流混合展示文章、视频、社区动态、课程卡片与直播入口。',
-      typeLabel: '推荐',
-      meta: '精选 · 8 分钟阅读',
+      accent: colors.coral,
+      badge: '直播中',
+      title: '今晚 21:00 牌谱复盘直播',
+      meta: 'MTT 决赛桌 · 128 人预约',
+      cta: '预约',
     },
     {
       id: 'recommend-2',
-      title: '从入门到稳定盈利：现金桌基础课',
-      summary: '单课购买课程，含 18 节系统训练和 6 个实战作业。',
-      typeLabel: '课程',
-      meta: '$29.99 · 支持试看',
+      accent: colors.mint,
+      badge: '知识',
+      title: '位置优势为什么是德州扑克的第一原则',
+      meta: '6 分钟阅读 · 收藏 328',
+    },
+    {
+      id: 'recommend-3',
+      accent: colors.gold,
+      badge: '课程',
+      title: '现金桌基础系统课',
+      meta: '$29.99 · 18 节 · 支持试看',
+      cta: '试看',
     },
   ],
   knowledge: [
     {
       id: 'knowledge-1',
-      title: '位置优势为什么是德州扑克的第一原则',
-      summary: '用按钮位、盲注位和前位的 EV 差异解释策略基础。',
-      typeLabel: '知识文章',
-      meta: '小编上传 · 6 分钟阅读',
+      accent: colors.mint,
+      badge: '策略概念',
+      title: '翻前范围：新手最该先记住的 4 个边界',
+      meta: '入门 · 收藏 328',
     },
     {
       id: 'knowledge-2',
-      title: '翻前范围：新手最该先记住的 4 个边界',
-      summary: '不背死表，先理解位置、筹码深度、对手类型和后手行动。',
-      typeLabel: '策略概念',
-      meta: '入门 · 收藏 328',
+      accent: colors.blue,
+      badge: '知识文章',
+      title: '翻牌圈顶对弱踢脚，应该控池还是下注？',
+      meta: '8 分钟阅读 · 精选',
     },
   ],
   community: [
     {
       id: 'community-1',
-      title: '用户动态：这手河牌跟注是不是太薄？',
-      summary: '社区内容默认先审后发，通过后进入社区频道信息流。',
-      typeLabel: '社区',
+      accent: colors.gold,
+      badge: '社区',
+      title: '这手河牌跟注是不是太薄？',
       meta: '待讨论 · 24 个点赞',
+      cta: '讨论',
     },
     {
       id: 'community-2',
-      title: '冷启动精选：一手 AQo 的三街决策',
-      summary: '运营后台可发布冷启动内容，维持社区早期内容密度。',
-      typeLabel: '运营精选',
+      accent: colors.mint,
+      badge: '运营精选',
+      title: '一手 AQo 的三街决策',
       meta: '牌谱摘要 · 9 条评论',
     },
   ],
   video: [
     {
       id: 'video-1',
-      title: '中长视频：SB vs BB 单挑底池实战讲解',
-      summary: '支持播放进度、收藏、点赞、评论和弱网重试。',
-      typeLabel: '视频',
+      accent: colors.coral,
+      badge: '视频',
+      title: 'SB vs BB 单挑底池实战讲解',
       meta: '38:12 · 继续观看 12:08',
+      cta: '播放',
     },
     {
       id: 'video-2',
+      accent: colors.blue,
+      badge: '视频课',
       title: '如何识别河牌过度诈唬线',
-      summary: '用 5 个真实牌例理解下注尺度与范围极化。',
-      typeLabel: '视频课',
       meta: '24:40 · 2.1k 播放',
     },
   ],
   live: [
     {
       id: 'live-1',
+      accent: colors.coral,
+      badge: '直播预告',
       title: '今晚 21:00 牌谱复盘直播',
-      summary: '首版直播频道展示预告、直播中状态和回放入口。',
-      typeLabel: '直播预告',
       meta: '21:00 开始 · 可预约',
+      cta: '预约',
     },
     {
       id: 'live-2',
+      accent: colors.gold,
+      badge: '回放',
       title: '上周 MTT 决赛桌复盘回放',
-      summary: '直播回放作为内容消费入口，实时推流与聊天室留到二期。',
-      typeLabel: '回放',
       meta: '72:05 · 已更新',
     },
   ],
 };
 
-const tools = [
+const trainingTools = [
   {
+    accent: colors.mint,
     title: '胜率计算器',
-    summary: '输入手牌、公共牌和玩家人数，计算胜率、平局率和败率。',
+    summary: '输入手牌、公共牌、玩家人数，得到胜率/平局率/败率。',
+    action: '计算',
   },
   {
+    accent: colors.coral,
     title: 'AI 实战复盘',
     summary: '粘贴文本牌谱，生成局面摘要、行动线分析、关键错误和改进建议。',
+    action: '开始分析',
   },
   {
+    accent: colors.gold,
     title: '复盘历史',
-    summary: '查看已保存的 AI 复盘记录，后续可关联课程和训练计划。',
+    summary: '保留原始输入与结构化结果，方便回看同类错误。',
+    action: '查看',
   },
 ];
 
-const courses = [
-  {
-    title: '现金桌基础系统课',
-    summary: '18 节课 · 支持试看 · 单课购买',
-  },
-  {
-    title: '翻后决策进阶课',
-    summary: '24 节课 · 章节学习进度 · 退款后自动撤权',
-  },
-  {
-    title: 'MTT 中后期短码策略',
-    summary: '12 节课 · 直播回放补充 · 作业复盘',
-  },
+const courseChapters = [
+  { title: '01 翻前范围与位置', meta: '试看 · 18 min', locked: false },
+  { title: '02 翻牌圈持续下注', meta: '已锁定 · 21 min', locked: true },
+  { title: '03 转牌压力与控池', meta: '已锁定 · 24 min', locked: true },
+  { title: '04 河牌价值下注', meta: '已锁定 · 27 min', locked: true },
 ];
+
+const profileItems = [
+  ['已购课程', '现金桌基础课 · 继续第 02 节', colors.gold],
+  ['复盘记录', '18 手牌 · 最近更新 12 分钟前', colors.mint],
+  ['我的收藏', '文章 / 视频 / 课程 / 回放', colors.coral],
+  ['设置与反馈', '账号、安全、举报与合规说明', colors.blue],
+] as const;
 
 export default function App() {
   const [activeRootTab, setActiveRootTab] = useState<RootTabKey>('home');
   const [activeChannel, setActiveChannel] =
     useState<HomeChannelKey>('recommend');
 
-  const activeRootLabel = useMemo(
+  const activeTabLabel = useMemo(
     () => rootTabs.find((tab) => tab.key === activeRootTab)?.label ?? '首页',
     [activeRootTab],
   );
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar style="dark" />
-      <View style={styles.shell}>
-        <View style={styles.header}>
-          <Text style={styles.kicker}>Poker Study</Text>
-          <Text style={styles.title}>{activeRootLabel}</Text>
-        </View>
-
+      <StatusBar style={activeRootTab === 'home' ? 'light' : 'dark'} />
+      <View style={styles.app}>
         <View style={styles.content}>{renderActiveTab()}</View>
-
-        <View style={styles.bottomTabs}>
-          {rootTabs.map((tab) => {
-            const isActive = activeRootTab === tab.key;
-
-            return (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityState={{ selected: isActive }}
-                key={tab.key}
-                onPress={() => setActiveRootTab(tab.key)}
-                style={[styles.bottomTab, isActive && styles.bottomTabActive]}
-              >
-                <Text
-                  style={[
-                    styles.bottomTabText,
-                    isActive && styles.bottomTabTextActive,
-                  ]}
-                >
-                  {tab.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        <BottomNavigation
+          activeTab={activeRootTab}
+          onChangeTab={setActiveRootTab}
+        />
       </View>
     </SafeAreaView>
   );
@@ -228,61 +238,54 @@ export default function App() {
   function renderActiveTab() {
     if (activeRootTab === 'home') {
       return (
-        <View style={styles.flex}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.homeContent}
+        >
+          <HeroPanel />
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            style={styles.channelTabs}
-            contentContainerStyle={styles.channelTabsContent}
+            contentContainerStyle={styles.channelRow}
           >
-            {homeChannels.map((channel) => {
-              const isActive = activeChannel === channel.key;
-
-              return (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: isActive }}
-                  key={channel.key}
-                  onPress={() => setActiveChannel(channel.key)}
-                  style={[
-                    styles.channelTab,
-                    isActive && styles.channelTabActive,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.channelTabText,
-                      isActive && styles.channelTabTextActive,
-                    ]}
-                  >
-                    {channel.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.listContent}
-          >
-            {channelCards[activeChannel].map((card) => (
-              <ContentCardItem key={card.id} card={card} />
+            {homeChannels.map((channel) => (
+              <Pill
+                key={channel.key}
+                active={activeChannel === channel.key}
+                label={channel.label}
+                onPress={() => setActiveChannel(channel.key)}
+              />
             ))}
           </ScrollView>
-        </View>
+          <View style={styles.feedList}>
+            {channelCards[activeChannel].map((card) => (
+              <FeedCardItem key={card.id} card={card} />
+            ))}
+          </View>
+        </ScrollView>
       );
     }
 
     if (activeRootTab === 'tools') {
       return (
-        <ScrollView contentContainerStyle={styles.listContent}>
-          <SectionIntro
-            title="训练工具"
-            summary="先落地胜率计算器、文本牌谱 AI 复盘和复盘历史，后续扩展手牌范围训练。"
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.pageContent}
+        >
+          <DarkHeader
+            eyebrow="训练工具"
+            title="把牌谱拆成可训练动作"
+            summary="胜率、行动线、关键错误和替代打法集中在一个训练台。"
           />
-          {tools.map((tool) => (
-            <SimpleCard key={tool.title} title={tool.title} summary={tool.summary} />
+          <View style={styles.statPanel}>
+            <View>
+              <Text style={styles.mutedLabel}>本周训练</Text>
+              <Text style={styles.statValue}>18 手牌</Text>
+            </View>
+            <Text style={styles.statCopy}>胜率判断正确率 72%</Text>
+          </View>
+          {trainingTools.map((tool) => (
+            <ToolCard key={tool.title} {...tool} />
           ))}
         </ScrollView>
       );
@@ -290,274 +293,909 @@ export default function App() {
 
     if (activeRootTab === 'courses') {
       return (
-        <ScrollView contentContainerStyle={styles.listContent}>
-          <SectionIntro
-            title="单课购买"
-            summary="课程支持试看、章节目录、平台内购、权益校验和学习进度。"
-          />
-          {courses.map((course) => (
-            <SimpleCard
-              key={course.title}
-              title={course.title}
-              summary={course.summary}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.pageContent}
+        >
+          <CourseHero />
+          <Text style={styles.sectionHeading}>课程章节</Text>
+          {courseChapters.map((chapter, index) => (
+            <ChapterCard
+              key={chapter.title}
+              chapter={chapter}
+              index={index}
             />
           ))}
+          <View style={styles.inlineNotice}>
+            <Text style={styles.inlineNoticeText}>
+              购买后同步学习进度，可在“我的”继续观看
+            </Text>
+          </View>
         </ScrollView>
       );
     }
 
     return (
-      <ScrollView contentContainerStyle={styles.listContent}>
-        <View style={styles.profilePanel}>
-          <View style={styles.avatar} />
-          <View style={styles.profileText}>
-            <Text style={styles.profileName}>未登录用户</Text>
-            <Text style={styles.profileSummary}>
-              登录后查看关注、粉丝、收藏、已购课程、学习记录和复盘历史。
-            </Text>
-          </View>
-        </View>
-        <SimpleCard title="用户主页" summary="头像、昵称、简介、动态和关注关系。" />
-        <SimpleCard title="我的收藏" summary="文章、视频、课程、直播回放统一收藏入口。" />
-        <SimpleCard title="设置与反馈" summary="账号设置、举报反馈、注销和合规说明。" />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.pageContent}
+      >
+        <ProfileHeader />
+        <Text style={styles.sectionHeading}>学习资产</Text>
+        {profileItems.map(([title, summary, accent]) => (
+          <ProfileItem
+            key={title}
+            title={title}
+            summary={summary}
+            accent={accent}
+          />
+        ))}
+        <Text style={styles.screenCaption}>{activeTabLabel}</Text>
       </ScrollView>
     );
   }
 }
 
-function ContentCardItem({ card }: { card: ContentCard }) {
+function HeroPanel() {
   return (
-    <View style={styles.card}>
-      <View style={styles.cardHeader}>
-        <Text style={styles.typeBadge}>{card.typeLabel}</Text>
-        <Text style={styles.meta}>{card.meta}</Text>
+    <View style={styles.hero}>
+      <View style={styles.heroGlow} />
+      <Text style={styles.heroEyebrow}>POKER STUDY</Text>
+      <Text style={styles.heroTitle}>今天训练哪条决策线？</Text>
+      <Text style={styles.heroSummary}>
+        从内容、工具到课程，把每一手牌变成可验证的策略。
+      </Text>
+      <View style={styles.heroCards}>
+        <PokerTile rank="A" suit="♠" tone="light" />
+        <PokerTile rank="K" suit="♥" tone="coral" raised />
       </View>
-      <Text style={styles.cardTitle}>{card.title}</Text>
-      <Text style={styles.cardSummary}>{card.summary}</Text>
-      <View style={styles.cardActions}>
-        <Text style={styles.actionText}>点赞</Text>
-        <Text style={styles.actionText}>收藏</Text>
-        <Text style={styles.actionText}>评论</Text>
-        <Text style={styles.actionText}>举报</Text>
+      <View style={styles.heroActions}>
+        <Pressable style={styles.primaryButton}>
+          <Text style={styles.primaryButtonText}>AI 复盘</Text>
+        </Pressable>
+        <Pressable style={styles.ghostButton}>
+          <Text style={styles.ghostButtonText}>继续学习</Text>
+        </Pressable>
       </View>
     </View>
   );
 }
 
-function SectionIntro({ title, summary }: { title: string; summary: string }) {
+function DarkHeader({
+  eyebrow,
+  summary,
+  title,
+}: {
+  eyebrow: string;
+  summary: string;
+  title: string;
+}) {
   return (
-    <View style={styles.sectionIntro}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      <Text style={styles.sectionSummary}>{summary}</Text>
+    <View style={styles.darkHeader}>
+      <Text style={styles.heroEyebrow}>{eyebrow}</Text>
+      <Text style={styles.darkHeaderTitle}>{title}</Text>
+      <Text style={styles.darkHeaderSummary}>{summary}</Text>
     </View>
   );
 }
 
-function SimpleCard({ title, summary }: { title: string; summary: string }) {
+function CourseHero() {
   return (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>{title}</Text>
-      <Text style={styles.cardSummary}>{summary}</Text>
+    <View style={styles.courseHero}>
+      <Text style={styles.courseTitle}>现金桌基础系统课</Text>
+      <Text style={styles.courseMentor}>讲师 AceLin · 18 节 · 6 个作业</Text>
+      <View style={styles.coursePriceBox}>
+        <Text style={styles.coursePriceLabel}>单课购买</Text>
+        <Text style={styles.coursePrice}>$29.99</Text>
+      </View>
+      <View style={styles.courseCards}>
+        <PokerTile rank="J" suit="♠" tone="light" />
+        <PokerTile rank="10" suit="♥" tone="coral" raised />
+      </View>
+      <Pressable style={styles.courseBuyButton}>
+        <Text style={styles.primaryButtonText}>购买并继续学习</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+function ProfileHeader() {
+  return (
+    <View style={styles.profileHeader}>
+      <View style={styles.profileTop}>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>T</Text>
+        </View>
+        <View style={styles.profileCopy}>
+          <Text style={styles.profileName}>未登录用户</Text>
+          <Text style={styles.profileSummary}>
+            登录后同步收藏、课程、复盘与关注关系。
+          </Text>
+        </View>
+      </View>
+      <Pressable style={styles.loginButton}>
+        <Text style={styles.primaryButtonText}>登录 / 注册</Text>
+      </Pressable>
+      <View style={styles.metricRow}>
+        <MetricCard label="关注" value="12" />
+        <MetricCard label="粉丝" value="89" />
+        <MetricCard label="收藏" value="328" />
+      </View>
+    </View>
+  );
+}
+
+function PokerTile({
+  raised,
+  rank,
+  suit,
+  tone,
+}: {
+  raised?: boolean;
+  rank: string;
+  suit: string;
+  tone: 'coral' | 'light';
+}) {
+  const isCoral = tone === 'coral';
+
+  return (
+    <View
+      style={[
+        styles.pokerTile,
+        isCoral ? styles.pokerTileCoral : styles.pokerTileLight,
+        raised && styles.pokerTileRaised,
+      ]}
+    >
+      <Text
+        style={[styles.pokerRank, isCoral && styles.pokerTextLight]}
+        numberOfLines={1}
+      >
+        {rank}
+      </Text>
+      <Text style={[styles.pokerSuit, isCoral && styles.pokerTextLight]}>
+        {suit}
+      </Text>
+    </View>
+  );
+}
+
+function Pill({
+  active,
+  label,
+  onPress,
+}: {
+  active: boolean;
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+      onPress={onPress}
+      style={[styles.pill, active && styles.pillActive]}
+    >
+      <Text style={[styles.pillText, active && styles.pillTextActive]}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+function FeedCardItem({ card }: { card: FeedCard }) {
+  return (
+    <View style={styles.feedCard}>
+      <View style={[styles.cardAccent, { backgroundColor: card.accent }]} />
+      <Text style={[styles.feedBadge, { color: card.accent }]}>{card.badge}</Text>
+      <Text style={styles.feedTitle}>{card.title}</Text>
+      <View style={styles.feedFooter}>
+        <Text style={styles.feedMeta}>{card.meta}</Text>
+        {card.cta ? (
+          <Pressable
+            style={[
+              styles.cardAction,
+              card.accent === colors.gold && styles.cardActionGold,
+            ]}
+          >
+            <Text
+              style={[
+                styles.cardActionText,
+                card.accent === colors.gold && styles.cardActionTextGold,
+              ]}
+            >
+              {card.cta}
+            </Text>
+          </Pressable>
+        ) : null}
+      </View>
+    </View>
+  );
+}
+
+function ToolCard({
+  accent,
+  action,
+  summary,
+  title,
+}: {
+  accent: string;
+  action: string;
+  summary: string;
+  title: string;
+}) {
+  return (
+    <View style={styles.toolCard}>
+      <View style={[styles.cardAccent, { backgroundColor: accent }]} />
+      <Text style={styles.toolTitle}>{title}</Text>
+      <Text style={styles.toolSummary}>{summary}</Text>
+      <Pressable style={styles.compactDarkButton}>
+        <Text style={styles.compactDarkButtonText}>{action}</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+function ChapterCard({
+  chapter,
+  index,
+}: {
+  chapter: { locked: boolean; meta: string; title: string };
+  index: number;
+}) {
+  const accent = index === 0 ? colors.mint : colors.line;
+
+  return (
+    <View style={styles.chapterCard}>
+      <View style={[styles.cardAccent, { backgroundColor: accent }]} />
+      <View style={styles.chapterCopy}>
+        <Text style={styles.chapterTitle}>{chapter.title}</Text>
+        <Text style={styles.chapterMeta}>{chapter.meta}</Text>
+      </View>
+      <View style={[styles.chapterStatus, !chapter.locked && styles.chapterOpen]}>
+        <Text style={styles.chapterStatusText}>
+          {chapter.locked ? '锁定' : '试看'}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function MetricCard({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.metricCard}>
+      <Text style={styles.metricValue}>{value}</Text>
+      <Text style={styles.metricLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function ProfileItem({
+  accent,
+  summary,
+  title,
+}: {
+  accent: string;
+  summary: string;
+  title: string;
+}) {
+  return (
+    <View style={styles.profileItem}>
+      <View style={[styles.cardAccent, { backgroundColor: accent }]} />
+      <View style={styles.profileItemCopy}>
+        <Text style={styles.profileItemTitle}>{title}</Text>
+        <Text style={styles.profileItemSummary}>{summary}</Text>
+      </View>
+      <Text style={[styles.profileArrow, { color: accent }]}>›</Text>
+    </View>
+  );
+}
+
+function BottomNavigation({
+  activeTab,
+  onChangeTab,
+}: {
+  activeTab: RootTabKey;
+  onChangeTab: (tab: RootTabKey) => void;
+}) {
+  return (
+    <View style={styles.bottomNavWrap}>
+      <View style={styles.bottomNav}>
+        {rootTabs.map((tab) => {
+          const isActive = activeTab === tab.key;
+
+          return (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ selected: isActive }}
+              key={tab.key}
+              onPress={() => onChangeTab(tab.key)}
+              style={[styles.bottomNavItem, isActive && styles.bottomNavActive]}
+            >
+              <Text
+                style={[
+                  styles.bottomNavText,
+                  isActive && styles.bottomNavTextActive,
+                ]}
+              >
+                {tab.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
-    flex: 1,
-    backgroundColor: '#F4F2EE',
-  },
-  shell: {
-    flex: 1,
-    backgroundColor: '#F4F2EE',
-  },
-  flex: {
+    backgroundColor: colors.panel,
     flex: 1,
   },
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 12,
-  },
-  kicker: {
-    color: '#2D6A4F',
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0,
-    marginBottom: 4,
-    textTransform: 'uppercase',
-  },
-  title: {
-    color: '#161A1D',
-    fontSize: 28,
-    fontWeight: '800',
-    letterSpacing: 0,
+  app: {
+    backgroundColor: colors.panel,
+    flex: 1,
   },
   content: {
     flex: 1,
   },
-  channelTabs: {
-    maxHeight: 52,
+  homeContent: {
+    paddingBottom: 104,
   },
-  channelTabsContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 10,
-    gap: 8,
+  pageContent: {
+    paddingBottom: 104,
   },
-  channelTab: {
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderColor: '#DDD7CC',
-    borderRadius: 8,
-    borderWidth: 1,
-    height: 40,
-    justifyContent: 'center',
-    minWidth: 64,
-    paddingHorizontal: 14,
+  hero: {
+    backgroundColor: colors.table,
+    height: 265,
+    overflow: 'hidden',
+    paddingHorizontal: 22,
+    paddingTop: 26,
   },
-  channelTabActive: {
-    backgroundColor: '#2D6A4F',
-    borderColor: '#2D6A4F',
+  heroGlow: {
+    backgroundColor: colors.mint,
+    borderRadius: 100,
+    height: 200,
+    opacity: 0.16,
+    position: 'absolute',
+    right: -12,
+    top: -48,
+    width: 200,
   },
-  channelTabText: {
-    color: '#5D625F',
+  heroEyebrow: {
+    color: colors.mint,
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0,
+    textTransform: 'uppercase',
+  },
+  heroTitle: {
+    color: colors.white,
+    fontSize: 29,
+    fontWeight: '900',
+    letterSpacing: 0,
+    lineHeight: 34,
+    marginTop: 16,
+    maxWidth: 270,
+  },
+  heroSummary: {
+    color: '#C7E5DB',
     fontSize: 14,
-    fontWeight: '700',
+    lineHeight: 21,
+    marginTop: 10,
+    maxWidth: 292,
   },
-  channelTabTextActive: {
-    color: '#FFFFFF',
+  heroCards: {
+    flexDirection: 'row',
+    position: 'absolute',
+    right: 38,
+    top: 92,
   },
-  listContent: {
+  pokerTile: {
+    alignItems: 'center',
+    borderRadius: 10,
+    height: 70,
+    justifyContent: 'center',
+    marginLeft: 8,
+    width: 54,
+  },
+  pokerTileLight: {
+    backgroundColor: colors.white,
+  },
+  pokerTileCoral: {
+    backgroundColor: colors.coral,
+  },
+  pokerTileRaised: {
+    marginTop: -20,
+  },
+  pokerRank: {
+    color: colors.ink,
+    fontSize: 24,
+    fontWeight: '900',
+    lineHeight: 26,
+  },
+  pokerSuit: {
+    color: colors.ink,
+    fontSize: 18,
+    fontWeight: '900',
+    lineHeight: 20,
+  },
+  pokerTextLight: {
+    color: colors.white,
+  },
+  heroActions: {
+    flexDirection: 'row',
     gap: 12,
-    paddingHorizontal: 16,
-    paddingBottom: 24,
+    marginTop: 18,
   },
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#E2DDD3',
-    borderRadius: 8,
+  primaryButton: {
+    alignItems: 'center',
+    backgroundColor: colors.mint,
+    borderRadius: 14,
+    height: 42,
+    justifyContent: 'center',
+    width: 132,
+  },
+  primaryButtonText: {
+    color: colors.ink,
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  ghostButton: {
+    alignItems: 'center',
+    backgroundColor: colors.tableLift,
+    borderColor: '#2E6B5C',
+    borderRadius: 14,
     borderWidth: 1,
-    padding: 16,
+    height: 42,
+    justifyContent: 'center',
+    width: 120,
   },
-  cardHeader: {
+  ghostButtonText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  channelRow: {
+    gap: 8,
+    paddingHorizontal: 22,
+    paddingTop: 22,
+  },
+  pill: {
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    borderColor: colors.line,
+    borderRadius: 17,
+    borderWidth: 1,
+    height: 34,
+    justifyContent: 'center',
+    minWidth: 58,
+    paddingHorizontal: 16,
+  },
+  pillActive: {
+    backgroundColor: colors.ink,
+    borderColor: colors.ink,
+  },
+  pillText: {
+    color: colors.ink,
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  pillTextActive: {
+    color: colors.mint,
+  },
+  feedList: {
+    gap: 16,
+    paddingHorizontal: 22,
+    paddingTop: 20,
+  },
+  feedCard: {
+    backgroundColor: colors.card,
+    borderColor: colors.line,
+    borderRadius: 18,
+    borderWidth: 1,
+    minHeight: 116,
+    overflow: 'hidden',
+    paddingBottom: 18,
+    paddingLeft: 20,
+    paddingRight: 20,
+    paddingTop: 18,
+  },
+  cardAccent: {
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    top: 0,
+    width: 5,
+  },
+  feedBadge: {
+    fontSize: 13,
+    fontWeight: '900',
+    marginBottom: 12,
+  },
+  feedTitle: {
+    color: colors.ink,
+    fontSize: 20,
+    fontWeight: '900',
+    lineHeight: 25,
+  },
+  feedFooter: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginTop: 16,
   },
-  typeBadge: {
-    backgroundColor: '#E7F1EC',
-    borderRadius: 6,
-    color: '#245A43',
-    fontSize: 12,
-    fontWeight: '800',
-    overflow: 'hidden',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  meta: {
-    color: '#767B78',
-    flexShrink: 1,
-    fontSize: 12,
-    marginLeft: 12,
-    textAlign: 'right',
-  },
-  cardTitle: {
-    color: '#171B1E',
-    fontSize: 18,
-    fontWeight: '800',
-    lineHeight: 24,
-    marginBottom: 8,
-  },
-  cardSummary: {
-    color: '#565C58',
-    fontSize: 14,
-    lineHeight: 21,
-  },
-  cardActions: {
-    borderColor: '#ECE7DD',
-    borderTopWidth: 1,
-    flexDirection: 'row',
-    gap: 18,
-    marginTop: 14,
-    paddingTop: 12,
-  },
-  actionText: {
-    color: '#2D6A4F',
+  feedMeta: {
+    color: colors.muted,
+    flex: 1,
     fontSize: 13,
-    fontWeight: '700',
   },
-  sectionIntro: {
-    backgroundColor: '#123C35',
-    borderRadius: 8,
-    padding: 18,
+  cardAction: {
+    alignItems: 'center',
+    backgroundColor: colors.ink,
+    borderRadius: 12,
+    height: 34,
+    justifyContent: 'center',
+    marginLeft: 12,
+    width: 70,
   },
-  sectionTitle: {
-    color: '#FFFFFF',
-    fontSize: 22,
-    fontWeight: '800',
-    marginBottom: 8,
+  cardActionGold: {
+    backgroundColor: colors.gold,
   },
-  sectionSummary: {
-    color: '#DCE8E2',
+  cardActionText: {
+    color: colors.mint,
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  cardActionTextGold: {
+    color: colors.ink,
+  },
+  darkHeader: {
+    backgroundColor: colors.table,
+    minHeight: 226,
+    paddingHorizontal: 22,
+    paddingTop: 38,
+  },
+  darkHeaderTitle: {
+    color: colors.white,
+    fontSize: 28,
+    fontWeight: '900',
+    letterSpacing: 0,
+    lineHeight: 34,
+    marginTop: 16,
+    maxWidth: 302,
+  },
+  darkHeaderSummary: {
+    color: '#C7E5DB',
     fontSize: 14,
     lineHeight: 21,
+    marginTop: 12,
+    maxWidth: 302,
   },
-  profilePanel: {
+  statPanel: {
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderColor: '#E2DDD3',
-    borderRadius: 8,
+    backgroundColor: colors.card,
+    borderColor: colors.line,
+    borderRadius: 20,
     borderWidth: 1,
     flexDirection: 'row',
-    padding: 16,
+    justifyContent: 'space-between',
+    marginHorizontal: 22,
+    marginTop: -58,
+    padding: 20,
+  },
+  mutedLabel: {
+    color: colors.muted,
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  statValue: {
+    color: colors.ink,
+    fontSize: 30,
+    fontWeight: '900',
+    marginTop: 8,
+  },
+  statCopy: {
+    color: colors.table,
+    fontSize: 15,
+    fontWeight: '900',
+    lineHeight: 20,
+    maxWidth: 140,
+  },
+  toolCard: {
+    backgroundColor: colors.card,
+    borderColor: colors.line,
+    borderRadius: 18,
+    borderWidth: 1,
+    marginHorizontal: 22,
+    marginTop: 16,
+    minHeight: 132,
+    overflow: 'hidden',
+    padding: 20,
+  },
+  toolTitle: {
+    color: colors.ink,
+    fontSize: 22,
+    fontWeight: '900',
+  },
+  toolSummary: {
+    color: colors.muted,
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 10,
+    maxWidth: 278,
+  },
+  compactDarkButton: {
+    alignItems: 'center',
+    backgroundColor: colors.ink,
+    borderRadius: 13,
+    height: 36,
+    justifyContent: 'center',
+    marginTop: 18,
+    width: 112,
+  },
+  compactDarkButtonText: {
+    color: colors.mint,
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  courseHero: {
+    backgroundColor: colors.ink,
+    minHeight: 310,
+    overflow: 'hidden',
+    paddingHorizontal: 24,
+    paddingTop: 38,
+  },
+  courseTitle: {
+    color: colors.white,
+    fontSize: 30,
+    fontWeight: '900',
+    lineHeight: 34,
+    maxWidth: 260,
+  },
+  courseMentor: {
+    color: '#C7E5DB',
+    fontSize: 14,
+    marginTop: 14,
+  },
+  coursePriceBox: {
+    backgroundColor: colors.mint,
+    borderRadius: 18,
+    height: 76,
+    justifyContent: 'center',
+    marginTop: 28,
+    paddingHorizontal: 18,
+    width: 160,
+  },
+  coursePriceLabel: {
+    color: colors.ink,
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  coursePrice: {
+    color: colors.ink,
+    fontSize: 26,
+    fontWeight: '900',
+    marginTop: 4,
+  },
+  courseCards: {
+    flexDirection: 'row',
+    position: 'absolute',
+    right: 38,
+    top: 132,
+  },
+  courseBuyButton: {
+    alignItems: 'center',
+    backgroundColor: colors.mint,
+    borderRadius: 16,
+    bottom: 22,
+    height: 46,
+    justifyContent: 'center',
+    left: 24,
+    position: 'absolute',
+    right: 24,
+  },
+  sectionHeading: {
+    color: colors.ink,
+    fontSize: 22,
+    fontWeight: '900',
+    marginHorizontal: 24,
+    marginTop: 28,
+  },
+  chapterCard: {
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    borderColor: colors.line,
+    borderRadius: 18,
+    borderWidth: 1,
+    flexDirection: 'row',
+    height: 72,
+    marginHorizontal: 24,
+    marginTop: 16,
+    overflow: 'hidden',
+    paddingLeft: 20,
+    paddingRight: 18,
+  },
+  chapterCopy: {
+    flex: 1,
+  },
+  chapterTitle: {
+    color: colors.ink,
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  chapterMeta: {
+    color: colors.muted,
+    fontSize: 12,
+    marginTop: 7,
+  },
+  chapterStatus: {
+    alignItems: 'center',
+    backgroundColor: colors.panel,
+    borderColor: colors.line,
+    borderRadius: 11,
+    borderWidth: 1,
+    height: 30,
+    justifyContent: 'center',
+    width: 52,
+  },
+  chapterOpen: {
+    backgroundColor: colors.mint,
+    borderColor: colors.mint,
+  },
+  chapterStatusText: {
+    color: colors.ink,
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  inlineNotice: {
+    backgroundColor: colors.card,
+    borderColor: colors.line,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginHorizontal: 24,
+    marginTop: 20,
+    padding: 14,
+  },
+  inlineNoticeText: {
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  profileHeader: {
+    backgroundColor: colors.table,
+    paddingHorizontal: 24,
+    paddingTop: 44,
+  },
+  profileTop: {
+    alignItems: 'center',
+    flexDirection: 'row',
   },
   avatar: {
-    backgroundColor: '#2D6A4F',
-    borderRadius: 28,
-    height: 56,
-    marginRight: 14,
-    width: 56,
+    alignItems: 'center',
+    backgroundColor: colors.mint,
+    borderRadius: 36,
+    height: 72,
+    justifyContent: 'center',
+    width: 72,
   },
-  profileText: {
+  avatarText: {
+    color: colors.ink,
+    fontSize: 38,
+    fontWeight: '900',
+  },
+  profileCopy: {
     flex: 1,
+    marginLeft: 16,
   },
   profileName: {
-    color: '#171B1E',
-    fontSize: 18,
-    fontWeight: '800',
-    marginBottom: 6,
+    color: colors.white,
+    fontSize: 24,
+    fontWeight: '900',
   },
   profileSummary: {
-    color: '#565C58',
+    color: '#C7E5DB',
     fontSize: 13,
-    lineHeight: 19,
+    lineHeight: 18,
+    marginTop: 8,
   },
-  bottomTabs: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#E2DDD3',
-    borderTopWidth: 1,
-    flexDirection: 'row',
-    paddingBottom: 10,
-    paddingHorizontal: 12,
-    paddingTop: 8,
-  },
-  bottomTab: {
+  loginButton: {
     alignItems: 'center',
-    borderRadius: 8,
+    backgroundColor: colors.mint,
+    borderRadius: 16,
+    height: 46,
+    justifyContent: 'center',
+    marginTop: 32,
+  },
+  metricRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 22,
+    transform: [{ translateY: 34 }],
+  },
+  metricCard: {
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    borderRadius: 18,
     flex: 1,
-    height: 42,
+    height: 64,
     justifyContent: 'center',
   },
-  bottomTabActive: {
-    backgroundColor: '#E7F1EC',
+  metricValue: {
+    color: colors.ink,
+    fontSize: 22,
+    fontWeight: '900',
   },
-  bottomTabText: {
-    color: '#606663',
-    fontSize: 14,
-    fontWeight: '700',
+  metricLabel: {
+    color: colors.muted,
+    fontSize: 12,
+    marginTop: 4,
   },
-  bottomTabTextActive: {
-    color: '#245A43',
+  profileItem: {
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    borderColor: colors.line,
+    borderRadius: 18,
+    borderWidth: 1,
+    flexDirection: 'row',
+    height: 72,
+    marginHorizontal: 24,
+    marginTop: 16,
+    overflow: 'hidden',
+    paddingLeft: 20,
+    paddingRight: 18,
+  },
+  profileItemCopy: {
+    flex: 1,
+  },
+  profileItemTitle: {
+    color: colors.ink,
+    fontSize: 17,
+    fontWeight: '900',
+  },
+  profileItemSummary: {
+    color: colors.muted,
+    fontSize: 13,
+    marginTop: 7,
+  },
+  profileArrow: {
+    fontSize: 28,
+    fontWeight: '900',
+  },
+  screenCaption: {
+    color: colors.muted,
+    fontSize: 12,
+    marginHorizontal: 24,
+    marginTop: 20,
+  },
+  bottomNavWrap: {
+    bottom: 14,
+    left: 14,
+    position: 'absolute',
+    right: 14,
+  },
+  bottomNav: {
+    backgroundColor: colors.ink,
+    borderRadius: 22,
+    flexDirection: 'row',
+    height: 58,
+    padding: 10,
+  },
+  bottomNavItem: {
+    alignItems: 'center',
+    borderRadius: 15,
+    flex: 1,
+    justifyContent: 'center',
+  },
+  bottomNavActive: {
+    backgroundColor: colors.mintSoft,
+  },
+  bottomNavText: {
+    color: colors.white,
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  bottomNavTextActive: {
+    color: colors.ink,
   },
 });
