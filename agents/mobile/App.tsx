@@ -633,8 +633,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   app: {
+    alignSelf: 'center',
     backgroundColor: colors.panel,
     flex: 1,
+    maxWidth: 390,
+    width: '100%',
   },
   content: {
     flex: 1,
